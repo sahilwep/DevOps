@@ -173,22 +173,100 @@ REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
 
 ```
 
-### Docker Logs
+### Running an application using docker :
+
+* Here i will use nginx application and run it.
+```sh
+# Download the nginx
+rio@0xveil:~$ sudo docker pull nginx                
+Using default tag: latest
+latest: Pulling from library/nginx
+5b5fe70539cd: Pull complete 
+441a1b465367: Pull complete 
+3b9543f2b500: Pull complete 
+ca89ed5461a9: Pull complete 
+b0e1283145af: Pull complete 
+4b98867cde79: Pull complete 
+4a85ce26214d: Pull complete 
+Digest: sha256:593dac25b7733ffb7afe1a72649a43e574778bf025ad60514ef40f6b5d606247
+Status: Downloaded newer image for nginx:latest
+docker.io/library/nginx:latest
+
+# Checking the images list.
+rio@0xveil:~$ sudo docker images    
+REPOSITORY    TAG       IMAGE ID       CREATED          SIZE
+myfile        latest    299d9e8ae78e   24 minutes ago   77.8MB
+nginx         latest    eb4a57159180   4 days ago       187MB
+ubuntu        latest    99284ca6cea0   12 days ago      77.8MB
+hello-world   latest    9c7a54a9a43c   6 weeks ago      13.3kB
+
+# run the nginx & Using port forwarding.
+rio@0xveil:~$ sudo docker run -d -p 8080:80 nginx
+a53c1ac4b195069aaa01d50833d005da8ef89f94c1dc3392b094ce647619bca5
+
+# Checking running docker containers
+rio@0xveil:~$ sudo docker ps                     
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                                   NAMES
+a53c1ac4b195   nginx     "/docker-entrypoint.…"   28 seconds ago   Up 27 seconds   0.0.0.0:8080->80/tcp, :::8080->80/tcp   hardcore_merkle
+```
+
+* Visiting [http://localhost:8080/](http://localhost:8080/) gives us a page.
+```plain
+Welcome to nginx!
+
+If you see this page, the nginx web server is successfully installed and working. Further configuration is required.
+
+For online documentation and support please refer to nginx.org.
+Commercial support is available at nginx.com.
+
+Thank you for using nginx.
+```
+
+* After that Stopping the applications.
+
+```sh
+# From this command we can check the container id.
+rio@0xveil:~$ sudo docker ps               
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS         PORTS                                   NAMES
+a53c1ac4b195   nginx     "/docker-entrypoint.…"   5 minutes ago   Up 5 minutes   0.0.0.0:8080->80/tcp, :::8080->80/tcp   hardcore_merkle
+
+# To stop the container.
+rio@0xveil:~$ sudo docker stop a53c1ac4b195
+a53c1ac4b195
+
+# Confirming after stopping.    
+rio@0xveil:~$ sudo docker ps               
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+
+
+### Checking Docker container logs.
 
 ```sh
 #  With this command we can check the logs
-rio@0xveil:~$ sudo docker logs 879c678d978c
-# these are logs
-root@879c678d978c:/# ls
-bin  boot  dev  etc  home  lib  lib32  lib64  libx32  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
-root@879c678d978c:/# whoami
-root
+rio@0xveil:~$ sudo docker ps -a 
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS                     PORTS     NAMES
+a53c1ac4b195   nginx     "/docker-entrypoint.…"   12 minutes ago   Exited (0) 7 minutes ago             hardcore_merkle
+
+# these are the logs
+rio@0xveil:~$ sudo docker logs a53c1ac4b195
+/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+/docker-entrypoint.sh: Configuration complete; ready for start up
+2023/06/18 13:07:57 [notice] 1#1: using the "epoll" event method
+
 
 ```
 
 ### How to attached running docker session.
 
-* Suppose there is docker container running on the local system, we want to attached that session with our terminal, then we can use this process.
+* Suppose there is a docker container running on the local system. we want to attached that session with our terminal, then we can use this process.
 
 ```sh
 #  this shows the running docker container.
@@ -209,8 +287,8 @@ root@5bba7febe87d:/# echo "This is attached session to the running docker sessio
 
 ### Docker Build :
 
+* Suppose We want to build our own docker images, then can use Docker Hub.
 * Building `Docker_Images` with `Docker_File` by `docker build`.
-* Suppose we want to build our own docker images, then can use Docker Hub in this case.
 * First we need to go on [Docker Hub](https://hub.docker.com/) and `SignUp`.
 * Then in `Terminal`
 
@@ -302,6 +380,57 @@ rio@0xveil:~/docker$ sudo docker image inspect myfile
 ...........
 
 ```
+
+### Docker Commit :
+
+* Suppose we want to share our Docker Container that we have made some changes in it with others, then we can use `docker commit`
+
+```sh
+
+
+#  running the ubuntu images.
+rio@0xveil:~$ sudo docker run -it ubuntu
+root@bc0456534af0:/# echo "Made changes here" > Hello.txt
+root@bc0456534af0:/# ls
+Hello.txt  bin  boot  dev  etc  home  lib  lib32  lib64  libx32  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+root@bc0456534af0:/# exit
+exit
+
+
+rio@0xveil:~$ sudo docker ps -a                                           
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS                          PORTS     NAMES
+bc0456534af0   ubuntu    "/bin/bash"              4 minutes ago    Exited (0) About a minute ago             zen_greider
+66c9c6b89180   ubuntu    "/bin/bash"              4 minutes ago    Exited (0) 4 minutes ago                  confident_bhaskara
+a53c1ac4b195   nginx     "/docker-entrypoint.…"   23 minutes ago   Exited (0) 18 minutes ago                 hardcore_merkle
+
+# Making commit to that container where we applied changes.
+rio@0xveil:~$ sudo docker commit -m "Made Changes" bc0456534af0 new_change_ubuntu:10.1
+sha256:d6ec0d903455e89c5538cb43125b9f36d7a5af74b22e8d8ae40a8244c927fad7
+
+
+#  Checking the image lists.
+rio@0xveil:~$ sudo docker images                    
+REPOSITORY          TAG       IMAGE ID       CREATED          SIZE
+new_change_ubuntu   10.1      d6ec0d903455   39 seconds ago   77.8MB
+myfile              latest    299d9e8ae78e   49 minutes ago   77.8MB
+nginx               latest    eb4a57159180   4 days ago       187MB
+ubuntu              latest    99284ca6cea0   12 days ago      77.8MB
+hello-world         latest    9c7a54a9a43c   6 weeks ago      13.3kB
+
+# running that changed images 
+rio@0xveil:~$ sudo docker run  -it d6ec0d903455    
+
+root@a6962647bfab:/# ls
+Hello.txt  bin  boot  dev  etc  home  lib  lib32  lib64  libx32  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+root@a6962647bfab:/# cat Hello.txt 
+Made changes here
+root@a6962647bfab:/# exit
+exit
+
+```
+
+
 
 
 
